@@ -2,6 +2,7 @@ package com.graphify.graphify_system.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -22,6 +23,27 @@ public class RepoJob {
 
     @Column(columnDefinition = "TEXT")
     private String analysisResult;
+
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
+    @Column(columnDefinition = "TEXT")
+    private String errorMessage;
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime completedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = "PENDING";
+        }
+    }
 
     public String getAnalysisResult() {
         return analysisResult;

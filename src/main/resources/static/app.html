@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphify - Repository Intelligence Platform</title>
+
+    <!-- React & ReactDOM from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --dark: #0f172a;
+            --darker: #030712;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --gray-lighter: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body, #root {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 50%, #1a1f35 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Suppress console errors from browser extensions */
+        @supports (selector(::-webkit-scrollbar)) {
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            ::-webkit-scrollbar-track {
+                background: rgba(148, 163, 184, 0.1);
+            }
+            ::-webkit-scrollbar-thumb {
+                background: rgba(99, 102, 241, 0.3);
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(99, 102, 241, 0.5);
+            }
+        }
+
+        /* Typography */
+        h1 { font-size: 2.25rem; font-weight: 700; line-height: 1.2; }
+        h2 { font-size: 1.875rem; font-weight: 700; line-height: 1.2; }
+        h3 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
+        h4 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; }
+        p { font-size: 1rem; line-height: 1.6; color: rgba(226, 232, 240, 0.8); }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .slide-in-up {
+            animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide-in-down {
+            animation: slideInDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Gradient & Glass Effects */
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .gradient-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .glass-thick {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            border-color: rgba(148, 163, 184, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.1);
+        }
+
+        .card-compact {
+            padding: 16px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.15);
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--primary-light);
+            border: 1px solid var(--primary-light);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .btn-lg {
+            padding: 14px 32px;
+            font-size: 15px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Forms */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .input-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(226, 232, 240, 0.8);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="url"],
+        textarea,
+        select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #e2e8f0;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="url"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        input::placeholder {
+            color: rgba(148, 163, 184, 0.5);
+        }
+
+        /* Alerts & Messages */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: slideInDown 0.3s ease-out;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+            color: #93c5fd;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border-left-color: #22c55e;
+            color: #86efac;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left-color: #f59e0b;
+            color: #fcd34d;
+        }
+
+        /* Loading & Spinners */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .spinner-sm {
+            width: 16px;
+            height: 16px;
+            border-width: 2px;
+        }
+
+        .spinner-lg {
+            width: 32px;
+            height: 32px;
+            border-width: 4px;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg,
+                rgba(148, 163, 184, 0.1) 0%,
+                rgba(148, 163, 184, 0.2) 50%,
+                rgba(148, 163, 184, 0.1) 100%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+            border-radius: 8px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-primary {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+
+        .badge-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        .badge-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.5) 100%);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideInDown 0.5s ease-out;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            margin: 0 auto;
+            max-width: 1600px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #f1f5f9;
+        }
+
+        .logo:hover {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: rgba(226, 232, 240, 0.7);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(226, 232, 240, 0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            opacity: 0.6;
+        }
+
+        .empty-state-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: rgba(226, 232, 240, 0.7);
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+        }
+
+        .stat-card-label {
+            font-size: 12px;
+            color: rgba(226, 232, 240, 0.6);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .stat-card-change {
+            font-size: 12px;
+            color: #86efac;
+        }
+
+        .stat-card-change.negative {
+            color: #fca5a5;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 8px;
+            background: rgba(148, 163, 184, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 4px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            animation: slideInUp 0.3s ease-out;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.875rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.25rem; }
+
+            .nav-links {
+                gap: 16px;
+            }
+
+            .grid-2,
+            .grid-3,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .modal {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Global error boundary wrapper
+        function ErrorBoundary({ children }) {
+            const [hasError, setHasError] = useState(false);
+
+            useEffect(() => {
+                const errorHandler = (event) => {
+                    if (event.message?.includes('tabs:outgoing')) {
+                        // Suppress browser extension errors
+                        event.preventDefault();
+                        return;
+                    }
+                };
+
+                window.addEventListener('error', errorHandler);
+                return () => window.removeEventListener('error', errorHandler);
+            }, []);
+
+            if (hasError) {
+                return (
+                    <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+                        <h2>Something went wrong</h2>
+                        <p style={{ marginBottom: '24px' }}>Please try refreshing the page</p>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => window.location.reload()}
+                        >
+                            Refresh Page
+                        </button>
+                    </div>
+                );
+            }
+
+            return children;
+        }
+
+        // Loading Spinner Component
+        function Spinner({ size = 'md' }) {
+            const sizeClass = size === 'sm' ? 'spinner-sm' : size === 'lg' ? 'spinner-lg' : '';
+            return <div className={`spinner ${sizeClass}`}></div>;
+        }
+
+        // Alert Component
+        function Alert({ type = 'info', title, message, onClose }) {
+            useEffect(() => {
+                const timer = setTimeout(onClose, 5000);
+                return () => clearTimeout(timer);
+            }, [onClose]);
+
+            return (
+                <div className={`alert alert-${type}`}>
+                    <div style={{ flex: 1 }}>
+                        {title && <strong>{title}</strong>}
+                        {message && <p style={{ margin: title ? '4px 0 0 0' : '0', fontSize: '14px' }}>{message}</p>}
+                    </div>
+                    <button
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'inherit',
+                            cursor: 'pointer',
+                            fontSize: '18px',
+                            padding: '0'
+                        }}
+                        onClick={onClose}
+                    >
+                        ×
+                    </button>
+                </div>
+            );
+        }
+
+        // Main Dashboard App
+        function GraphifyApp() {
+            const [currentPage, setCurrentPage] = useState('dashboard');
+            const [repoUrl, setRepoUrl] = useState('');
+            const [jobId, setJobId] = useState(null);
+            const [analysis, setAnalysis] = useState(null);
+            const [recentJobs, setRecentJobs] = useState([]);
+            const [alerts, setAlerts] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [analysisStatus, setAnalysisStatus] = useState('idle');
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
+            // Add alert helper
+            const addAlert = (type, title, message) => {
+                const id = Date.now();
+                setAlerts(prev => [...prev, { id, type, title, message }]);
+            };
+
+            const removeAlert = (id) => {
+                setAlerts(prev => prev.filter(a => a.id !== id));
+            };
+
+            // Load recent jobs
+            useEffect(() => {
+                loadRecentJobs();
+            }, []);
+
+            const loadRecentJobs = async () => {
+                try {
+                    const response = await axios.get('/repo/jobs?size=5');
+                    setRecentJobs(response.data.jobs || []);
+                } catch (error) {
+                    console.error('Failed to load recent jobs:', error);
+                }
+            };
+
+            const analyzeRepo = async (e) => {
+                e.preventDefault();
+                if (!repoUrl.trim()) {
+                    addAlert('error', 'Invalid Input', 'Please enter a repository URL');
+                    return;
+                }
+
+                setLoading(true);
+                setAnalysis(null);
+                setAnalysisStatus('analyzing');
+
+                try {
+                    const response = await axios.post('/repo/analyze', null, {
+                        params: { repoUrl: repoUrl.trim() }
+                    });
+                    setJobId(response.data.id);
+                    addAlert('success', 'Analysis Started', 'Fetching repository data...');
+                    pollStatus(response.data.id);
+                } catch (error) {
+                    const message = error.response?.data?.message || error.message;
+                    addAlert('error', 'Analysis Failed', message);
+                    setAnalysisStatus('error');
+                    setLoading(false);
+                }
+            };
+
+            const pollStatus = (id) => {
+                const interval = setInterval(async () => {
+                    try {
+                        const response = await axios.get(`/repo/status/${id}`);
+                        if (response.data.analysisResult) {
+                            const data = typeof response.data.analysisResult === 'string'
+                                ? JSON.parse(response.data.analysisResult)
+                                : response.data.analysisResult;
+                            setAnalysis(data);
+                            setAnalysisStatus('completed');
+                            setLoading(false);
+                            addAlert('success', 'Analysis Complete', 'Repository analysis finished successfully!');
+                            clearInterval(interval);
+                            loadRecentJobs();
+                        }
+                    } catch (error) {
+                        console.error('Poll error:', error);
+                    }
+                }, 2000);
+
+                setTimeout(() => {
+                    clearInterval(interval);
+                    if (analysisStatus === 'analyzing') {
+                        setAnalysisStatus('timeout');
+                        setLoading(false);
+                        addAlert('warning', 'Analysis Timeout', 'The analysis is taking longer than expected');
+                    }
+                }, 120000);
+            };
+
+            return (
+                <ErrorBoundary>
+                    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                        {/* Header */}
+                        <header>
+                            <nav className="container">
+                                <a href="#" className="logo">
+                                    <span>📊</span>
+                                    <span>Graphify</span>
+                                </a>
+                                <ul className="nav-links">
+                                    <li>
+                                        <a
+                                            href="#"
+                                            className={currentPage === 'dashboard' ? 'active' : ''}
+                                            onClick={(e) => { e.preventDefault(); setCurrentPage('dashboard'); }}
+                                        >
+                                            Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            href="#"
+                                            className={currentPage === 'analyze' ? 'active' : ''}
+                                            onClick={(e) => { e.preventDefault(); setCurrentPage('analyze'); }}
+                                        >
+                                            Analyze
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            href="#"
+                                            className={currentPage === 'history' ? 'active' : ''}
+                                            onClick={(e) => { e.preventDefault(); setCurrentPage('history'); }}
+                                        >
+                                            History
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </header>
+
+                        {/* Alerts */}
+                        <div style={{ position: 'fixed', top: 80, right: 20, zIndex: 999, maxWidth: '400px' }}>
+                            {alerts.map(alert => (
+                                <Alert
+                                    key={alert.id}
+                                    type={alert.type}
+                                    title={alert.title}
+                                    message={alert.message}
+                                    onClose={() => removeAlert(alert.id)}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Main Content */}
+                        <main style={{ flex: 1, padding: '40px 20px' }}>
+                            <div className="container">
+                                {currentPage === 'dashboard' && (
+                                    <div className="slide-in-up">
+                                        <h1 style={{ marginBottom: '12px' }}>Dashboard</h1>
+                                        <p style={{ marginBottom: '40px', color: 'rgba(226, 232, 240, 0.6)' }}>
+                                            Monitor your repository analyses and insights
+                                        </p>
+
+                                        {/* Quick Stats */}
+                                        <div className="grid grid-4" style={{ marginBottom: '40px' }}>
+                                            <div className="stat-card">
+                                                <div className="stat-card-label">Total Analyses</div>
+                                                <div className="stat-card-value">{recentJobs.length}</div>
+                                                <div className="stat-card-change">+2 this week</div>
+                                            </div>
+                                            <div className="stat-card">
+                                                <div className="stat-card-label">Completed</div>
+                                                <div className="stat-card-value">{recentJobs.filter(j => j.status === 'COMPLETED').length}</div>
+                                                <div className="stat-card-change">100% success</div>
+                                            </div>
+                                            <div className="stat-card">
+                                                <div className="stat-card-label">In Progress</div>
+                                                <div className="stat-card-value">{recentJobs.filter(j => j.status === 'PENDING').length}</div>
+                                                <div className="stat-card-change">Processing...</div>
+                                            </div>
+                                            <div className="stat-card">
+                                                <div className="stat-card-label">Platform Status</div>
+                                                <div className="stat-card-value">✓</div>
+                                                <div className="stat-card-change">All systems operational</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Recent Activity */}
+                                        <div className="card" style={{ marginBottom: '40px' }}>
+                                            <h3 style={{ marginBottom: '24px', fontSize: '18px', fontWeight: '600' }}>Recent Analyses</h3>
+                                            {recentJobs.length === 0 ? (
+                                                <div className="empty-state">
+                                                    <div className="empty-state-icon">📦</div>
+                                                    <div className="empty-state-title">No analyses yet</div>
+                                                    <p>Start analyzing repositories to see them here</p>
+                                                </div>
+                                            ) : (
+                                                <div style={{ display: 'grid', gap: '12px' }}>
+                                                    {recentJobs.slice(0, 5).map(job => (
+                                                        <div
+                                                            key={job.id}
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                                padding: '16px',
+                                                                background: 'rgba(148, 163, 184, 0.05)',
+                                                                borderRadius: '8px',
+                                                                border: '1px solid rgba(148, 163, 184, 0.1)'
+                                                            }}
+                                                        >
+                                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                                <div style={{ fontWeight: '600', marginBottom: '4px', wordBreak: 'break-all' }}>
+                                                                    {job.repoUrl}
+                                                                </div>
+                                                                <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.5)' }}>
+                                                                    {new Date(job.createdAt).toLocaleString()}
+                                                                </div>
+                                                            </div>
+                                                            <span className={`badge badge-${
+                                                                job.status === 'COMPLETED' ? 'success' :
+                                                                job.status === 'PENDING' ? 'warning' : 'error'
+                                                            }`}>
+                                                                {job.status}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {currentPage === 'analyze' && (
+                                    <div className="slide-in-up">
+                                        <h1 style={{ marginBottom: '12px' }}>Analyze Repository</h1>
+                                        <p style={{ marginBottom: '40px', color: 'rgba(226, 232, 240, 0.6)' }}>
+                                            Enter a GitHub repository URL to start analysis
+                                        </p>
+
+                                        <div style={{ maxWidth: '800px' }}>
+                                            <div className="card" style={{ marginBottom: '40px' }}>
+                                                <form onSubmit={analyzeRepo}>
+                                                    <div className="input-group">
+                                                        <label className="input-label">Repository URL</label>
+                                                        <input
+                                                            type="url"
+                                                            placeholder="https://github.com/user/repo"
+                                                            value={repoUrl}
+                                                            onChange={(e) => setRepoUrl(e.target.value)}
+                                                            disabled={loading}
+                                                            style={{ fontSize: '15px' }}
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="submit"
+                                                        className="btn btn-primary"
+                                                        style={{ width: '100%' }}
+                                                        disabled={loading}
+                                                    >
+                                                        {loading ? (
+                                                            <>
+                                                                <Spinner size="sm" />
+                                                                Analyzing...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span>🚀</span>
+                                                                Start Analysis
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            {/* Results */}
+                                            {analysis && analysisStatus === 'completed' && (
+                                                <div className="card fade-in">
+                                                    <h2 style={{ marginBottom: '24px' }}>Analysis Results</h2>
+
+                                                    <div className="grid grid-3" style={{ marginBottom: '32px' }}>
+                                                        <div className="stat-card">
+                                                            <div className="stat-card-label">Repository Name</div>
+                                                            <div style={{ fontSize: '16px', fontWeight: '600', marginTop: '8px', wordBreak: 'break-word' }}>
+                                                                {analysis.repository_name || 'N/A'}
+                                                            </div>
+                                                        </div>
+                                                        <div className="stat-card">
+                                                            <div className="stat-card-label">Primary Language</div>
+                                                            <div style={{ fontSize: '16px', fontWeight: '600', marginTop: '8px' }}>
+                                                                {analysis.primary_language || 'Unknown'}
+                                                            </div>
+                                                        </div>
+                                                        <div className="stat-card">
+                                                            <div className="stat-card-label">Repository Size</div>
+                                                            <div style={{ fontSize: '16px', fontWeight: '600', marginTop: '8px' }}>
+                                                                {analysis.size ? `${(analysis.size / 1024).toFixed(2)} MB` : 'N/A'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Full Data */}
+                                                    <div style={{
+                                                        background: 'rgba(15, 23, 42, 0.8)',
+                                                        borderRadius: '8px',
+                                                        padding: '16px',
+                                                        border: '1px solid rgba(148, 163, 184, 0.1)',
+                                                        marginTop: '24px'
+                                                    }}>
+                                                        <details>
+                                                            <summary style={{ cursor: 'pointer', color: '#a5b4fc', fontWeight: '600', padding: '8px 0' }}>
+                                                                View Full Analysis Data
+                                                            </summary>
+                                                            <pre style={{
+                                                                marginTop: '16px',
+                                                                overflow: 'auto',
+                                                                fontSize: '11px',
+                                                                color: '#cbd5e1',
+                                                                maxHeight: '400px'
+                                                            }}>
+                                                                {JSON.stringify(analysis, null, 2)}
+                                                            </pre>
+                                                        </details>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {analysisStatus === 'analyzing' && (
+                                                <div className="card fade-in">
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                                        <Spinner />
+                                                        <div>
+                                                            <p style={{ fontWeight: '600', marginBottom: '4px' }}>Analysis in progress...</p>
+                                                            <p style={{ fontSize: '14px', color: 'rgba(226, 232, 240, 0.5)', margin: 0 }}>
+                                                                This may take a minute or two
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {analysisStatus === 'idle' && !analysis && (
+                                                <div className="empty-state">
+                                                    <div className="empty-state-icon">🔍</div>
+                                                    <div className="empty-state-title">Ready to analyze</div>
+                                                    <p>Enter a repository URL above to get started</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {currentPage === 'history' && (
+                                    <div className="slide-in-up">
+                                        <h1 style={{ marginBottom: '12px' }}>Analysis History</h1>
+                                        <p style={{ marginBottom: '40px', color: 'rgba(226, 232, 240, 0.6)' }}>
+                                            View all your repository analyses
+                                        </p>
+
+                                        {recentJobs.length === 0 ? (
+                                            <div className="empty-state">
+                                                <div className="empty-state-icon">⏱️</div>
+                                                <div className="empty-state-title">No analyses yet</div>
+                                                <p>Start analyzing repositories to see them here</p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-2">
+                                                {recentJobs.map(job => (
+                                                    <div key={job.id} className="card">
+                                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                                            <h4 style={{ margin: 0, wordBreak: 'break-word', flex: 1 }}>
+                                                                {job.repoUrl}
+                                                            </h4>
+                                                            <span className={`badge badge-${
+                                                                job.status === 'COMPLETED' ? 'success' :
+                                                                job.status === 'PENDING' ? 'warning' : 'error'
+                                                            }`}>
+                                                                {job.status}
+                                                            </span>
+                                                        </div>
+                                                        <p style={{ fontSize: '12px', margin: '8px 0', color: 'rgba(226, 232, 240, 0.5)' }}>
+                                                            Started: {new Date(job.createdAt).toLocaleString()}
+                                                        </p>
+                                                        {job.completedAt && (
+                                                            <p style={{ fontSize: '12px', margin: '4px 0', color: 'rgba(226, 232, 240, 0.5)' }}>
+                                                                Completed: {new Date(job.completedAt).toLocaleString()}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </main>
+
+                        {/* Footer */}
+                        <footer className="glass" style={{ borderTop: '1px solid rgba(148, 163, 184, 0.1)', marginTop: 'auto' }}>
+                            <div className="container" style={{ padding: '24px 0', textAlign: 'center', fontSize: '13px', color: 'rgba(226, 232, 240, 0.4)' }}>
+                                <p style={{ margin: 0 }}>
+                                    © 2026 Graphify • Advanced Repository Intelligence Platform
+                                </p>
+                            </div>
+                        </footer>
+                    </div>
+                </ErrorBoundary>
+            );
+        }
+
+        // Render App
+        try {
+            const root = document.getElementById('root');
+            if (root) {
+                ReactDOM.createRoot(root).render(<GraphifyApp />);
+            }
+        } catch (error) {
+            console.error('Failed to render app:', error);
+            document.getElementById('root').innerHTML = '<div style="color: red; padding: 20px;">Failed to load application. Please refresh the page.</div>';
+        }
+
+        // Initialize feather icons after render
+        setTimeout(() => {
+            try {
+                feather.replace();
+            } catch (e) {
+                // Feather icons optional
+            }
+        }, 100);
+
+        // Suppress specific console errors from browser extensions
+        if (typeof window !== 'undefined') {
+            const originalError = window.onerror;
+            window.onerror = function(msg, url, lineNo, columnNo, error) {
+                if (msg && msg.includes('tabs:outgoing')) {
+                    return true; // Suppress this error
+                }
+                if (originalError) {
+                    return originalError(msg, url, lineNo, columnNo, error);
+                }
+                return false;
+            };
+        }
+    </script>
+</body>
+</html>

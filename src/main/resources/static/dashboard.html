@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphify Dashboard</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: #6366f1;
+            --color-secondary: #8b5cf6;
+            --color-accent: #ec4899;
+            --color-dark: #0f172a;
+            --color-darker: #030712;
+            --color-light: #f8fafc;
+            --color-gray: #64748b;
+            --color-success: #22c55e;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, var(--color-darker) 0%, var(--color-dark) 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        html, body, #root {
+            height: 100%;
+            width: 100%;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .glass-light {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.6) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            border-color: rgba(148, 163, 184, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+        }
+
+        .card-small {
+            padding: 16px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .button-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .button-secondary {
+            background: rgba(148, 163, 184, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .button-secondary:hover:not(:disabled) {
+            background: rgba(148, 163, 184, 0.2);
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .input-field::placeholder {
+            color: rgba(226, 232, 240, 0.4);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #a5b4fc;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.4);
+            color: #86efac;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fcd34d;
+        }
+
+        .badge-error {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(139, 92, 246, 0.15);
+            color: #d8b4fe;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title svg {
+            width: 28px;
+            height: 28px;
+            color: var(--color-primary);
+        }
+
+        .stat-card {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 4px solid var(--color-primary);
+            padding: 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(99, 102, 241, 0.12);
+            border-left-color: var(--color-secondary);
+        }
+
+        .stat-card label {
+            font-size: 12px;
+            color: rgba(226, 232, 240, 0.6);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 4px;
+        }
+
+        .alert {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(226, 232, 240, 0.5);
+        }
+
+        .empty-state .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 18px;
+            }
+
+            .stat-card .value {
+                font-size: 28px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        function Dashboard() {
+            const [currentPage, setCurrentPage] = useState('analyze');
+            const [repoUrl, setRepoUrl] = useState('');
+            const [jobId, setJobId] = useState(null);
+            const [analysis, setAnalysis] = useState(null);
+            const [error, setError] = useState(null);
+            const [success, setSuccess] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [analysisStatus, setAnalysisStatus] = useState('idle');
+            const [recentJobs, setRecentJobs] = useState([]);
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
+            const analyzeRepo = async (e) => {
+                e.preventDefault();
+                if (!repoUrl.trim()) {
+                    setError('Please enter a repository URL');
+                    return;
+                }
+
+                setLoading(true);
+                setError(null);
+                setSuccess(null);
+                setAnalysis(null);
+                setAnalysisStatus('analyzing');
+
+                try {
+                    const response = await axios.post('/repo/analyze', null, {
+                        params: { repoUrl: repoUrl.trim() }
+                    });
+                    setJobId(response.data.id);
+                    setSuccess('Analysis started! Fetching repository data...');
+                    pollStatus(response.data.id);
+                } catch (err) {
+                    const errorMsg = err.response?.data?.message || err.message || 'Failed to start analysis';
+                    setError(errorMsg);
+                    setAnalysisStatus('error');
+                    setLoading(false);
+                }
+            };
+
+            const pollStatus = (id) => {
+                const interval = setInterval(async () => {
+                    try {
+                        const response = await axios.get(`/repo/status/${id}`);
+                        if (response.data.analysisResult) {
+                            const analysisData = typeof response.data.analysisResult === 'string'
+                                ? JSON.parse(response.data.analysisResult)
+                                : response.data.analysisResult;
+                            setAnalysis(analysisData);
+                            setAnalysisStatus('completed');
+                            setLoading(false);
+                            setSuccess('Analysis completed successfully!');
+                            clearInterval(interval);
+                        }
+                    } catch (err) {
+                        console.error('Poll error:', err);
+                    }
+                }, 1500);
+
+                setTimeout(() => {
+                    clearInterval(interval);
+                    if (analysisStatus === 'analyzing') {
+                        setAnalysisStatus('timeout');
+                        setLoading(false);
+                    }
+                }, 120000);
+            };
+
+            const loadRecentJobs = async () => {
+                try {
+                    const response = await axios.get('/repo/jobs?size=5');
+                    setRecentJobs(response.data.jobs || []);
+                } catch (err) {
+                    console.error('Failed to load recent jobs:', err);
+                }
+            };
+
+            useEffect(() => {
+                loadRecentJobs();
+                const interval = setInterval(loadRecentJobs, 10000);
+                return () => clearInterval(interval);
+            }, []);
+
+            useEffect(() => {
+                if (analysis && chartRef.current) {
+                    const ctx = chartRef.current.getContext('2d');
+
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+
+                    const languages = analysis.codebase?.languages || {};
+                    const labels = Object.keys(languages).slice(0, 8);
+                    const data = labels.map(lang => languages[lang]?.percentage || 0);
+
+                    if (labels.length > 0) {
+                        chartInstance.current = new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: [
+                                        'rgba(99, 102, 241, 0.9)',
+                                        'rgba(139, 92, 246, 0.9)',
+                                        'rgba(236, 72, 153, 0.9)',
+                                        'rgba(14, 165, 233, 0.9)',
+                                        'rgba(34, 197, 94, 0.9)',
+                                        'rgba(251, 146, 60, 0.9)',
+                                        'rgba(168, 85, 247, 0.9)',
+                                        'rgba(59, 130, 246, 0.9)',
+                                    ],
+                                    borderColor: 'rgba(15, 23, 42, 1)',
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            color: '#cbd5e1',
+                                            padding: 16,
+                                            font: { size: 12, weight: '600' }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [analysis]);
+
+            return (
+                <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    {/* Header */}
+                    <header className="glass" style={{ borderBottom: '1px solid rgba(148, 163, 184, 0.1)' }}>
+                        <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                                <h1 style={{ fontSize: '32px', fontWeight: 700, margin: 0, marginBottom: '4px' }}>
+                                    <span className="gradient-text">Graphify</span>
+                                </h1>
+                                <p style={{ margin: 0, color: 'rgba(226, 232, 240, 0.5)', fontSize: '13px', fontWeight: 500 }}>
+                                    Repository Intelligence Platform
+                                </p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                <span className="badge badge-success">Live</span>
+                                <span className="badge">v2.0</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main style={{ flex: 1, maxWidth: '1600px', width: '100%', margin: '0 auto', padding: '40px 20px' }}>
+                        {/* Tabs */}
+                        <div style={{ display: 'flex', gap: '12px', marginBottom: '40px', borderBottom: '1px solid rgba(148, 163, 184, 0.1)', paddingBottom: '16px' }}>
+                            <button
+                                onClick={() => setCurrentPage('analyze')}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: currentPage === 'analyze' ? '#6366f1' : 'rgba(226, 232, 240, 0.5)',
+                                    borderBottom: currentPage === 'analyze' ? '2px solid #6366f1' : 'none',
+                                    cursor: 'pointer',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                📊 Analyze Repository
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage('history')}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: currentPage === 'history' ? '#6366f1' : 'rgba(226, 232, 240, 0.5)',
+                                    borderBottom: currentPage === 'history' ? '2px solid #6366f1' : 'none',
+                                    cursor: 'pointer',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                ⏱️ Recent Analyses
+                            </button>
+                        </div>
+
+                        {/* Analyze Page */}
+                        {currentPage === 'analyze' && (
+                            <>
+                                {/* Search Section */}
+                                <div className="card" style={{ marginBottom: '40px' }}>
+                                    <h2 style={{ fontSize: '24px', fontWeight: 700, marginTop: 0, marginBottom: '20px', color: '#f1f5f9' }}>
+                                        Analyze a GitHub Repository
+                                    </h2>
+                                    <p style={{ color: 'rgba(226, 232, 240, 0.6)', marginBottom: '24px', fontSize: '14px' }}>
+                                        Enter any GitHub repository URL to get comprehensive insights about code quality, languages, contributors, and AI-powered analysis.
+                                    </p>
+
+                                    <form onSubmit={analyzeRepo}>
+                                        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                                            <input
+                                                type="text"
+                                                className="input-field"
+                                                placeholder="https://github.com/username/repository"
+                                                value={repoUrl}
+                                                onChange={(e) => setRepoUrl(e.target.value)}
+                                                disabled={loading}
+                                                style={{ flex: 1 }}
+                                            />
+                                            <button
+                                                type="submit"
+                                                className="button button-primary"
+                                                disabled={loading}
+                                            >
+                                                {loading ? (
+                                                    <>
+                                                        <span className="spinner"></span>
+                                                        Analyzing...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <i data-feather="search" style={{ width: '18px', height: '18px' }}></i>
+                                                        Analyze
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    {error && (
+                                        <div className="alert alert-error">
+                                            <i data-feather="alert-circle" style={{ width: '18px', height: '18px' }}></i>
+                                            {error}
+                                        </div>
+                                    )}
+
+                                    {success && (
+                                        <div className="alert alert-success">
+                                            <i data-feather="check-circle" style={{ width: '18px', height: '18px' }}></i>
+                                            {success}
+                                        </div>
+                                    )}
+
+                                    {loading && (
+                                        <div className="alert alert-info">
+                                            <span className="spinner"></span>
+                                            Analyzing repository... This may take a moment.
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Results Section */}
+                                {analysis && analysisStatus === 'completed' && (
+                                    <>
+                                        {/* Summary */}
+                                        <div className="card" style={{ marginBottom: '40px', borderLeft: '4px solid #6366f1' }}>
+                                            <h3 className="section-title">
+                                                <i data-feather="file-text" style={{ width: '24px', height: '24px' }}></i>
+                                                AI-Generated Summary
+                                            </h3>
+                                            <div style={{
+                                                padding: '20px',
+                                                background: 'rgba(99, 102, 241, 0.08)',
+                                                borderLeft: '4px solid #6366f1',
+                                                borderRadius: '8px',
+                                                lineHeight: 1.8,
+                                                color: '#cbd5e1',
+                                                fontSize: '14px'
+                                            }}>
+                                                {analysis.summary || 'No summary available'}
+                                            </div>
+                                        </div>
+
+                                        {/* Stats Grid */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+                                            <div className="stat-card">
+                                                <label>Total Lines of Code</label>
+                                                <div className="value">{(analysis.codebase?.total_loc || 0).toLocaleString()}</div>
+                                            </div>
+
+                                            <div className="stat-card">
+                                                <label>Primary Language</label>
+                                                <div className="value" style={{ fontSize: '24px' }}>{analysis.codebase?.primary_language || 'N/A'}</div>
+                                            </div>
+
+                                            <div className="stat-card">
+                                                <label>Total Contributors</label>
+                                                <div className="value">{analysis.contributors?.total || 0}</div>
+                                            </div>
+
+                                            <div className="stat-card">
+                                                <label>Last Updated</label>
+                                                <div className="value" style={{ fontSize: '16px' }}>
+                                                    {analysis.activity?.last_commit_date
+                                                        ? new Date(analysis.activity.last_commit_date).toLocaleDateString()
+                                                        : 'N/A'
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Languages Chart */}
+                                        {analysis.codebase?.languages && (
+                                            <div className="card" style={{ marginBottom: '40px' }}>
+                                                <h3 className="section-title">
+                                                    <i data-feather="pie-chart" style={{ width: '24px', height: '24px' }}></i>
+                                                    Language Distribution
+                                                </h3>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center' }}>
+                                                    <div>
+                                                        <canvas ref={chartRef} style={{ maxHeight: '300px' }}></canvas>
+                                                    </div>
+                                                    <div>
+                                                        {Object.entries(analysis.codebase.languages).slice(0, 6).map(([lang, data]) => (
+                                                            <div key={lang} style={{ marginBottom: '18px' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                                                    <span style={{ fontSize: '14px', color: '#cbd5e1', fontWeight: 600 }}>{lang}</span>
+                                                                    <span style={{ fontSize: '14px', color: '#a5b4fc', fontWeight: 600 }}>{data.percentage?.toFixed(1)}%</span>
+                                                                </div>
+                                                                <div className="progress-bar">
+                                                                    <div className="progress-fill" style={{ width: `${data.percentage}%` }}></div>
+                                                                </div>
+                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Top Contributors */}
+                                        {analysis.contributors?.top_contributors && (
+                                            <div className="card" style={{ marginBottom: '40px' }}>
+                                                <h3 className="section-title">
+                                                    <i data-feather="users" style={{ width: '24px', height: '24px' }}></i>
+                                                    Top Contributors
+                                                </h3>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+                                                    {analysis.contributors.top_contributors.slice(0, 9).map((contributor, idx) => (
+                                                        <div key={idx} className="card card-small">
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                                                                <div style={{
+                                                                    width: '44px',
+                                                                    height: '44px',
+                                                                    borderRadius: '50%',
+                                                                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontWeight: 700,
+                                                                    color: 'white',
+                                                                    fontSize: '16px',
+                                                                    flexShrink: 0
+                                                                }}>
+                                                                    {(contributor.name || '?').charAt(0).toUpperCase()}
+                                                                </div>
+                                                                <div style={{ minWidth: 0 }}>
+                                                                    <div style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                        {contributor.name || 'Unknown'}
+                                                                    </div>
+                                                                    <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.6)' }}>
+                                                                        {contributor.commits} commits
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="progress-bar">
+                                                                <div className="progress-fill" style={{ width: `${(contributor.commits / (analysis.activity?.total_commits || 1)) * 100}%` }}></div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Raw Data */}
+                                        <div className="card">
+                                            <h3 className="section-title">
+                                                <i data-feather="code" style={{ width: '24px', height: '24px' }}></i>
+                                                Full Analysis Data
+                                            </h3>
+                                            <details style={{ marginTop: '16px' }}>
+                                                <summary style={{ cursor: 'pointer', color: '#a5b4fc', fontWeight: 600, padding: '8px 0' }}>
+                                                    View Raw JSON
+                                                </summary>
+                                                <pre style={{
+                                                    marginTop: '16px',
+                                                    padding: '16px',
+                                                    background: 'rgba(15, 23, 42, 0.8)',
+                                                    borderRadius: '8px',
+                                                    overflow: 'auto',
+                                                    fontSize: '11px',
+                                                    color: '#cbd5e1',
+                                                    maxHeight: '500px',
+                                                    border: '1px solid rgba(148, 163, 184, 0.1)'
+                                                }}>
+                                                    {JSON.stringify(analysis, null, 2)}
+                                                </pre>
+                                            </details>
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Empty State */}
+                                {!analysis && analysisStatus === 'idle' && (
+                                    <div className="empty-state">
+                                        <div className="icon">📦</div>
+                                        <p style={{ fontSize: '16px', marginBottom: '8px', color: 'rgba(226, 232, 240, 0.7)' }}>No analysis yet</p>
+                                        <p style={{ fontSize: '14px' }}>Enter a GitHub repository URL above to get started</p>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* History Page */}
+                        {currentPage === 'history' && (
+                            <div>
+                                <h2 style={{ fontSize: '24px', fontWeight: 700, marginTop: 0, marginBottom: '24px', color: '#f1f5f9' }}>
+                                    Recent Analyses
+                                </h2>
+
+                                {recentJobs.length === 0 ? (
+                                    <div className="empty-state">
+                                        <div className="icon">⏱️</div>
+                                        <p style={{ fontSize: '16px', marginBottom: '8px', color: 'rgba(226, 232, 240, 0.7)' }}>No analyses yet</p>
+                                        <p style={{ fontSize: '14px' }}>Start analyzing repositories to see them here</p>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'grid', gap: '16px' }}>
+                                        {recentJobs.map((job) => (
+                                            <div key={job.id} className="card">
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: 600, color: '#f1f5f9', marginBottom: '8px', fontSize: '16px', wordBreak: 'break-all' }}>
+                                                            {job.repoUrl}
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '12px', color: 'rgba(226, 232, 240, 0.6)' }}>
+                                                            <span>{new Date(job.createdAt).toLocaleString()}</span>
+                                                            {job.completedAt && (
+                                                                <span>• Completed: {new Date(job.completedAt).toLocaleString()}</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <span className={`badge ${
+                                                        job.status === 'COMPLETED' ? 'badge-success' :
+                                                        job.status === 'PENDING' ? 'badge-warning' :
+                                                        'badge-error'
+                                                    }`}>
+                                                        {job.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="glass" style={{ borderTop: '1px solid rgba(148, 163, 184, 0.1)', marginTop: '60px' }}>
+                        <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '20px', textAlign: 'center', fontSize: '13px', color: 'rgba(226, 232, 240, 0.4)' }}>
+                            <p style={{ margin: 0 }}>© 2026 Graphify • Advanced Repository Intelligence Platform</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<Dashboard />);
+        feather.replace();
+    </script>
+</body>
+</html>
