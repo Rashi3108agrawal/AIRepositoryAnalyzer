@@ -1,195 +1,247 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   PieChart,
   Pie,
   Cell,
   Tooltip,
+  ResponsiveContainer,
 } from "recharts";
+import "./App.css";
+import CountUp from "react-countup";
+import HeatMap from "react-calendar-heatmap";
+import "react-calendar-heatmap/dist/styles.css";
 
-function App() {
+export default function App() {
   const [repoUrl, setRepoUrl] = useState("");
   const [jobId, setJobId] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleAnalyze = async () => {
-    if (!repoUrl) return alert("Please enter a GitHub repo URL");
+  const analyzeRepo = async () => {
+    if (!repoUrl) return alert("Enter repo URL");
 
     setLoading(true);
-    const res = await axios.post(
-      "http://localhost:8080/repo/analyze?repoUrl=" + repoUrl
-    );
-    setJobId(res.data.id);
+    setData(null);
+
+    try {
+      const res = await axios.post(
+        "http://localhost:8080/repo/analyze?repoUrl=" + repoUrl
+      );
+      setJobId(res.data.id);
+    } catch (e) {
+      alert("Backend error");
+    }
+
     setLoading(false);
   };
 
-  const checkStatus = async () => {
-    const res = await axios.get(
-      "http://localhost:8080/repo/status/" + jobId
-    );
-    setData(res.data);
+  // polling
+  useEffect(() => {
+    if (!jobId) return;
+
+    const interval = setInterval(async () => {
+      const res = await axios.get(
+        "http://localhost:8080/repo/status/" + jobId
+      );
+      setData(res.data);
+
+      if (["SUCCESS", "FAILED"].includes(res.data.status)) {
+        clearInterval(interval);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [jobId]);
+
+  const repo =
+    typeof data?.analysisResult === "string"
+      ? JSON.parse(data.analysisResult)
+      : data?.analysisResult || {};
+
+  const contributors = repo?.contributors || {};
+
+  const languageData = repo?.codebase?.languages
+    ? Object.entries(repo.codebase.languages).map(([k, v]) => ({
+        name: k,
+        value: Number(v) || 1,
+      }))
+    : [];
+
+  const progress = () => {
+    if (data?.status === "PENDING") return 25;
+    if (data?.status === "PROCESSING") return 65;
+    if (data?.status === "SUCCESS") return 100;
+    if (data?.status === "FAILED") return 100;
+    return 0;
   };
 
-  const parsed = data?.analysisResult ?? null;
-
-  const languageData =
-    parsed?.codebase?.languages
-      ? Object.entries(parsed.codebase.languages).map(([key, value]) => ({
-          name: key,
-          value: value,
-        }))
-      : [];
-
   return (
-    <div style={styles.page}>
+    <div className="app">
 
       {/* HEADER */}
-      <h1 style={styles.title}>🚀 Graphify AI Dashboard</h1>
-      <p style={styles.subtitle}>
-        Paste a GitHub repository URL to analyze structure, codebase & insights
-      </p>
+      <div className="header">
+        <h1>Graphify AI</h1>
+        <p>GitHub repository intelligence dashboard</p>
 
-      {/* INPUT CARD */}
-      <div style={styles.card}>
-        <input
-          style={styles.input}
-          placeholder="https://github.com/user/repo"
-          value={repoUrl}
-          onChange={(e) => setRepoUrl(e.target.value)}
-        />
-
-        <button style={styles.button} onClick={handleAnalyze}>
-          {loading ? "Analyzing..." : "Analyze Repository"}
-        </button>
-      </div>
-
-      {/* JOB STATUS */}
-      {jobId && (
-        <div style={styles.card}>
-          <p>🆔 Job ID: {jobId}</p>
-          <button style={styles.secondaryButton} onClick={checkStatus}>
-            Check Status
+        <div className="inputBox">
+          <input
+            placeholder="Paste GitHub repo URL..."
+            value={repoUrl}
+            onChange={(e) => setRepoUrl(e.target.value)}
+          />
+          <button onClick={analyzeRepo}>
+            {loading ? "Analyzing..." : "Analyze"}
           </button>
         </div>
+      </div>
+
+      {/* SKELETON */}
+      {loading && (
+        <div className="grid">
+          {[1, 2, 3, 4].map((i) => (
+            <div className="skeleton card" key={i}></div>
+          ))}
+        </div>
       )}
 
-      {/* RESULTS */}
+      {/* PROGRESS */}
       {data && (
-        <div style={styles.card}>
-          <h3>Status: {data.status}</h3>
-
-          {parsed && (
-            <pre style={styles.jsonBox}>
-              {JSON.stringify(parsed, null, 2)}
-            </pre>
-          )}
+        <div className="card glass progressCard">
+          <div className="progressBar">
+            <div
+              className="progressFill"
+              style={{ width: `${progress()}%` }}
+            />
+          </div>
+          <p>Status: {data.status}</p>
         </div>
       )}
 
-      {/* CHART */}
-      {languageData.length > 0 && (
-        <div style={styles.card}>
-          <h3>📊 Language Distribution</h3>
-          <PieChart width={350} height={300}>
-            <Pie
-              data={languageData}
-              dataKey="value"
-              nameKey="name"
-              outerRadius={120}
-            >
-              {languageData.map((_, index) => (
-                <Cell key={index} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
+      {/* METRICS */}
+      <div className="grid">
+        <div className="card">
+          ⭐ <h2><CountUp end={repo.stars ?? 0} duration={1.2} /></h2>
         </div>
-      )}
 
-      {/* AI SUMMARY */}
-      {parsed?.insights?.aiSummary && (
-        <div style={styles.aiBox}>
-          <h3>🤖 AI Summary</h3>
-          <p>{parsed.insights.aiSummary}</p>
+        <div className="card">
+          🍴 <h2><CountUp end={repo.forks ?? 0} duration={1.2} /></h2>
+        </div>
+
+        <div className="card">
+          👨‍💻 <h2><CountUp end={contributors.totalContributors ?? 0} duration={1.2} /></h2>
+        </div>
+
+        <div className="card">
+          📦 <h2><CountUp end={repo.size ?? 0} duration={1.2} /></h2>
+        </div>
+      </div>
+
+      {/* DASHBOARD GRID */}
+      <div className="grid2">
+
+        {/* CHART */}
+        {languageData.length > 0 && (
+          <div className="card glass chartBox">
+            <h3>Language Distribution</h3>
+
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie data={languageData} dataKey="value" outerRadius={90}>
+                  {languageData.map((_, i) => (
+                    <Cell key={i} fill={`hsl(${i * 70},70%,60%)`} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* CONTRIBUTOR PANEL */}
+        <div className="card glass aiPanel">
+          <h3>Contributor Intelligence</h3>
+
+          <div className="aiGrid">
+            <div>
+              <p>Bus Factor</p>
+              <h2>{contributors.busFactor ?? "N/A"}</h2>
+            </div>
+
+            <div>
+              <p>Total Contributors</p>
+              <h2>{contributors.totalContributors ?? "N/A"}</h2>
+            </div>
+
+            <div>
+              <p>Top Contributor</p>
+              <h2>{contributors.topContributor ?? "N/A"}</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+        <div className="card heatmapCard">
+          <h3>📅 Contribution Activity</h3>
+
+          <HeatMap
+            startDate={new Date("2024-01-01")}
+            endDate={new Date()}
+            values={[
+              { date: "2024-01-01", count: 1 },
+              { date: "2024-01-03", count: 3 },
+              { date: "2024-01-07", count: 5 },
+            ]}
+            classForValue={(value) => {
+              if (!value) return "color-empty";
+              if (value.count > 4) return "color-github-4";
+              if (value.count > 2) return "color-github-3";
+              if (value.count > 0) return "color-github-2";
+              return "color-github-1";
+            }}
+          />
+        </div>
+
+      {/* AI REPORT */}
+      {repo?.ai_summary && (
+        <div className="card aiReportCard">
+
+          <div className="aiHeader">
+            🤖 AI Code Intelligence Report
+          </div>
+
+          <div className="aiScore">
+            <span>Score</span>
+            <h1>{repo.ai_summary?.score ?? 0}/100</h1>
+          </div>
+
+          <div className="aiBadge">
+            {repo.ai_summary?.health_status === "GOOD"
+              ? "🟢 Healthy Codebase"
+              : "🟡 Needs Improvement"}
+          </div>
+
+          <div className="aiGrid">
+            <div className="aiBox green">
+              <h4>Strengths</h4>
+              <ul>
+                {repo.ai_summary?.strengths?.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="aiBox yellow">
+              <h4>Improvements</h4>
+              <ul>
+                {repo.ai_summary?.areas_for_improvement?.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
         </div>
       )}
     </div>
   );
 }
-
-export default App;
-
-/* ---------------- STYLES ---------------- */
-
-const styles = {
-  page: {
-    fontFamily: "Arial",
-    padding: "30px",
-    maxWidth: "900px",
-    margin: "auto",
-    background: "#f6f7fb",
-    minHeight: "100vh",
-  },
-
-  title: {
-    fontSize: "32px",
-    marginBottom: "5px",
-  },
-
-  subtitle: {
-    color: "gray",
-    marginBottom: "20px",
-  },
-
-  card: {
-    background: "white",
-    padding: "20px",
-    borderRadius: "12px",
-    marginBottom: "15px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-  },
-
-  input: {
-    width: "100%",
-    padding: "12px",
-    fontSize: "14px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-    marginBottom: "10px",
-  },
-
-  button: {
-    padding: "10px 15px",
-    background: "#4f46e5",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    width: "100%",
-  },
-
-  secondaryButton: {
-    padding: "8px 12px",
-    background: "#e5e7eb",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-  },
-
-  jsonBox: {
-    background: "#111",
-    color: "#0f0",
-    padding: "10px",
-    borderRadius: "8px",
-    overflowX: "auto",
-    fontSize: "12px",
-  },
-
-  aiBox: {
-    background: "#eef2ff",
-    padding: "20px",
-    borderRadius: "12px",
-    marginTop: "10px",
-  },
-};

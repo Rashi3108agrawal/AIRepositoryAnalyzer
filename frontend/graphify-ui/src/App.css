@@ -1,38 +1,270 @@
-.App {
+body {
+  margin: 0;
+  font-family: Inter, system-ui;
+  background: radial-gradient(circle at top, #eef2ff, #f8fafc);
+  color: #0f172a;
+}
+
+/* MAIN LAYOUT */
+.app {
+  padding: 30px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* HEADER */
+.header {
   text-align: center;
+  margin-bottom: 30px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.header h1 {
+  font-size: 42px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.header p {
+  color: #64748b;
+  margin-top: -10px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* INPUT */
+.inputBox {
+  margin-top: 20px;
+}
+
+input {
+  padding: 14px;
+  width: 340px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  outline: none;
+  transition: 0.2s;
+}
+
+input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+}
+
+button {
+  margin-left: 10px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+/* GRID SYSTEM */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+/* CARD (REAL SAAS LOOK) */
+.card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: 0.25s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+}
+
+/* METRIC CARD */
+.card h2 {
+  font-size: 28px;
+  margin: 10px 0 0;
+}
+
+/* PROGRESS BAR (ANIMATED) */
+.progressBar {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #06b6d4, #22c55e);
+  background-size: 200% 100%;
+  animation: move 2s linear infinite;
+  transition: width 0.5s ease;
+}
+
+@keyframes move {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* CHART BOX */
+.chartBox {
+  height: 320px;
+}
+
+/* AI PANEL */
+.aiPanel {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.aiGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.aiGrid div {
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+/* AI REPORT */
+.aiReport {
+  margin-top: 20px;
+}
+
+.aiReport h2 {
+  font-size: 22px;
+}
+
+.aiReport .score {
+  font-size: 26px;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+/* SKELETON */
+.skeleton {
+  height: 120px;
+  border-radius: 18px;
+  background: linear-gradient(90deg,#eef2f7,#f8fafc,#eef2f7);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  input {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+.aiReportCard {
+  margin-top: 20px;
+  padding: 22px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  border: 1px solid #e2e8f0;
+}
+
+.aiHeader {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.aiScore {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.aiScore h1 {
+  font-size: 36px;
+  color: #4f46e5;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.aiBadge {
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+.aiGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.aiBox {
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.aiBox h4 {
+  margin-bottom: 8px;
+}
+
+.heatmapCard {
+  margin-top: 20px;
+}
+
+/* GitHub-like colors */
+.color-empty {
+  fill: #ebedf0;
+}
+
+.color-github-1 {
+  fill: #9be9a8;
+}
+
+.color-github-2 {
+  fill: #40c463;
+}
+
+.color-github-3 {
+  fill: #30a14e;
+}
+
+.color-github-4 {
+  fill: #216e39;
+}
+
+.aiBox.green {
+  border-left: 4px solid #22c55e;
+}
+
+.aiBox.yellow {
+  border-left: 4px solid #f59e0b;
 }
