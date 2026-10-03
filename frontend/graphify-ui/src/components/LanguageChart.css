@@ -1,0 +1,32 @@
+.chartBox {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-5);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.chartBox:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.chartBox h3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.chartBox h3::before {
+  content: "";
+  display: inline-block;
+  width: var(--spacing-3);
+  height: var(--spacing-3);
+  background: linear-gradient(to right, var(--color-accent), #4facfe);
+  border-radius: 50%;
+}

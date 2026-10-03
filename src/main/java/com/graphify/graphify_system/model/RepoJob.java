@@ -8,6 +8,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(indexes = {
+        @Index(name = "idx_repojob_status", columnList = "status"),
+        @Index(name = "idx_repojob_createdat", columnList = "createdAt")
+})
 public class RepoJob {
 
     @Id
@@ -17,8 +21,13 @@ public class RepoJob {
     private int retryCount;
     private int maxRetries = 3;
 
+    @Column(nullable = false)
     private String repoUrl;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private JobStatus status;
+
     private String resultPath;
 
     @Column(columnDefinition = "TEXT")
@@ -30,7 +39,7 @@ public class RepoJob {
     @Column(columnDefinition = "TEXT")
     private String errorMessage;
 
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime completedAt;
@@ -41,15 +50,14 @@ public class RepoJob {
             createdAt = LocalDateTime.now();
         }
         if (status == null) {
-            status = "PENDING";
+            status = JobStatus.PENDING;
         }
     }
 
-    public String getAnalysisResult() {
-        return analysisResult;
-    }
-
-    public void setAnalysisResult(String analysisResult) {
-        this.analysisResult = analysisResult;
+    public enum JobStatus {
+        PENDING,
+        PROCESSING,
+        COMPLETED,
+        FAILED
     }
 }

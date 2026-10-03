@@ -1,0 +1,27 @@
+# Docker ignore file
+target/
+npm_debug.log
+.env
+.git
+.gitignore
+README.md
+HELP.md
+Dockerfile
+docker-compose.yml
+frontend/node_modules/
+frontend/build/
+frontend/npm-debug.log*
+frontend/yarn-error.log*
+frontend/yarn.lock
+frontend/package-lock.json
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+__pycache__/
+*.pyc
+.env.*
+!src/main/resources/application.properties
+!src/main/resources/application-dev.properties
+!src/main/resources/application-prod.properties

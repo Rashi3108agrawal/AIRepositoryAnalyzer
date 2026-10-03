@@ -1,6 +1,8 @@
 package com.graphify.graphify_system.service;
 
 import com.graphify.graphify_system.config.WebClientConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,9 +12,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class AIService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AIService.class);
 
     @Autowired
     private WebClient webClient;
@@ -20,16 +25,80 @@ public class AIService {
     @Value("${groq.api.key}")
     private String apiKey;
 
+    @Value("${groq.api.endpoint}")
+    private String apiEndpoint;
+
+    @Value("${groq.api.model}")
+    private String model;
+
+    @Value("${groq.api.timeout}")
+    private int timeoutSeconds;
+
+    @Value("${groq.api.max-tokens}")
+    private int maxTokens;
+
+    @Value("${groq.api.temperature}")
+    private double temperature;
+
     public String generateSummary(String analysisJson) {
+        // Validate input
+        if (analysisJson == null || analysisJson.isBlank()) {
+            logger.warn("Empty analysis JSON provided to AI service");
+            return "No analysis data available for summarization";
+        }
 
-        String prompt = "Summarize this repository in 3 lines:\n"
-                + analysisJson.substring(0, Math.min(1500, analysisJson.length()));
+        // Check if API key is configured
+        if (apiKey == null || apiKey.isBlank()) {
+            logger.warn("Groq API key not configured - skipping AI summary generation");
+            return "AI summary generation requires API key configuration";
+        }
 
+        logger.debug("Generating AI summary for analysis data (length: {})", analysisJson.length());
+
+        // Create a concise prompt focusing on the most important aspects
+        String prompt = createAnalysisPrompt(analysisJson);
+
+        try {
+            Map<String, Object> requestBody = createRequestBody(prompt);
+
+            Map<String, Object> response = webClient
+                    .post()
+                    .uri(apiEndpoint)
+                    .headers(headers -> {
+                        headers.setBearerAuth(apiKey);
+                        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+                    })
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .timeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                    .block();
+
+            return extractSummaryFromResponse(response);
+        } catch (Exception e) {
+            logger.error("Error generating AI summary: {}", e.getMessage(), e);
+            return "AI summary generation failed: " + e.getClass().getSimpleName();
+        }
+    }
+
+    private String createAnalysisPrompt(String analysisJson) {
+        // Truncate to reasonable size to avoid excessive token usage
+        String truncatedJson = analysisJson.length() > 2000
+                ? analysisJson.substring(0, 2000) + "... [truncated]"
+                : analysisJson;
+
+        return """
+                Analyze this GitHub repository data and provide a concise summary in 2-3 sentences.
+                Focus on the project's purpose, main technologies, and notable characteristics.
+
+                Repository Data:
+                """ + truncatedJson;
+    }
+
+    private Map<String, Object> createRequestBody(String prompt) {
         Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", model);
 
-        requestBody.put("model", "llama3-8b-8192");
-
-// messages
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of(
                 "role", "user",
@@ -37,40 +106,53 @@ public class AIService {
         ));
 
         requestBody.put("messages", messages);
+        requestBody.put("temperature", temperature);
+        requestBody.put("max_tokens", maxTokens);
 
-// ADD THESE (🔥 VERY IMPORTANT)
-        requestBody.put("temperature", 0.7);
-        requestBody.put("max_tokens", 300);   // ⚠️ REQUIRED in many cases
+        return requestBody;
+    }
 
-        Map response = webClient
-                .post()
-                .uri("/openai/v1/chat/completions")
-                .headers(headers -> {
-                    headers.setBearerAuth(apiKey);
-                    headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-                })
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .timeout(java.time.Duration.ofSeconds(20))
-                .block();
-
+    private String extractSummaryFromResponse(Map<String, Object> response) {
         try {
-            try {
-                java.util.List choices = (java.util.List) response.get("choices");
-                if (choices != null && !choices.isEmpty()) {
-                    Map choice = (Map) choices.get(0);
-                    Map message = (Map) choice.get("message");
-                    return (String) message.get("content");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (response == null) {
+                logger.warn("Null response from Groq API");
+                return "Empty response from AI service";
             }
 
-            return "AI parsing failed";
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+
+            if (choices == null || choices.isEmpty()) {
+                logger.warn("No choices in Groq API response");
+                return "No summary generated by AI service";
+            }
+
+            Map<String, Object> firstChoice = choices.get(0);
+            if (firstChoice == null) {
+                logger.warn("First choice is null in Groq API response");
+                return "Invalid response format from AI service";
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
+
+            if (message == null) {
+                logger.warn("Message is null in Groq API response choice");
+                return "Invalid response format from AI service";
+            }
+
+            String content = (String) message.get("content");
+
+            if (content == null || content.isBlank()) {
+                logger.warn("Empty content in Groq API response");
+                return "Empty summary generated by AI service";
+            }
+
+            logger.debug("Successfully extracted AI summary (length: {})", content.length());
+            return content.trim();
         } catch (Exception e) {
-            e.printStackTrace();   // 🔥 ADD THIS
-            return "AI summary not available";
+            logger.error("Error extracting summary from Groq API response: {}", e.getMessage(), e);
+            return "Failed to parse AI service response";
         }
     }
 }

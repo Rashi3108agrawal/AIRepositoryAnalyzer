@@ -1,0 +1,56 @@
+.inputBox {
+  display: flex;
+  gap: var(--spacing-3);
+  max-width: 600px;
+  width: 100%;
+  margin: var(--spacing-6) auto;
+  padding: 0 var(--spacing-4);
+}
+
+.repoInput {
+  flex: 1;
+  padding: var(--spacing-4);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.repoInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.repoInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.2);
+}
+
+.analyzeButton {
+  padding: var(--spacing-4) var(--spacing-6);
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: var(--color-accent);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.analyzeButton:hover:not(:disabled) {
+  background-color: #284566; /* Darker shade of accent */
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.analyzeButton:disabled {
+  background-color: var(--color-text-muted);
+  cursor: not-allowed;
+  transform: none;
+}
