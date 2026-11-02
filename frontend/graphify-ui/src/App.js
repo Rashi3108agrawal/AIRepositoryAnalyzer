@@ -62,8 +62,10 @@ export default function App() {
 
       if (res.data && res.data.id) {
         setJobId(res.data.id);
-        // Start polling for job status
-        startPolling();
+        setData(res.data);
+        if (res.data.status !== "COMPLETED" && res.data.status !== "FAILED") {
+          startPolling(res.data.id);
+        }
       } else {
         throw new Error("Invalid response from server");
       }
@@ -75,39 +77,42 @@ export default function App() {
     }
   };
 
-  const startPolling = () => {
-    setPollInterval(
-      setInterval(async () => {
-        if (!jobId) return;
+  const startPolling = (id) => {
+    if (pollInterval) {
+      clearInterval(pollInterval);
+    }
 
-        try {
-          const res = await axios.get(`${API_BASE_URL}/analyze/${jobId}`);
+    const interval = setInterval(async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/analyze/${id}`);
+        if (res.data) {
           setData(res.data);
 
           // Stop polling when job is complete or failed
-          if (res.data && ["COMPLETED", "FAILED"].includes(res.data.status)) {
-            clearInterval(pollInterval);
+          if (["COMPLETED", "FAILED"].includes(res.data.status)) {
+            clearInterval(interval);
             setPollInterval(null);
           }
-        } catch (e) {
-          console.error("Polling error:", e);
-          setError("Failed to check job status. Please try refreshing.");
-          // Stop polling on persistent errors
-          clearInterval(pollInterval);
-          setPollInterval(null);
         }
-      }, 2000) // Poll every 2 seconds
-    );
+      } catch (e) {
+        console.error("Polling error:", e);
+        setError("Failed to check job status. Please try refreshing.");
+        clearInterval(interval);
+        setPollInterval(null);
+      }
+    }, 2000); // Poll every 2 seconds
+
+    setPollInterval(interval);
   };
 
-  // Clean up polling interval on unmount or when jobId changes
+  // Clean up polling interval on unmount
   useEffect(() => {
     return () => {
       if (pollInterval) {
         clearInterval(pollInterval);
       }
     };
-  }, [jobId, pollInterval]);
+  }, [pollInterval]);
 
   // Reset form when starting a new analysis
   useEffect(() => {
@@ -116,9 +121,17 @@ export default function App() {
     }
   }, [loading]);
 
-  const repo = typeof data?.analysisResult === "string"
-    ? JSON.parse(data.analysisResult)
-    : data?.analysisResult || {};
+  let repo = {};
+  try {
+    if (typeof data?.analysisResult === "string" && data.analysisResult.trim().length > 0) {
+      repo = JSON.parse(data.analysisResult);
+    } else if (typeof data?.analysisResult === "object" && data?.analysisResult !== null) {
+      repo = data.analysisResult;
+    }
+  } catch (err) {
+    console.error("Failed to parse analysisResult:", err);
+    repo = {};
+  }
 
   const contributors = repo?.contributors || {};
 
@@ -128,31 +141,6 @@ export default function App() {
         value: Number(v) || 1,
       }))
     : [];
-
-  const progress = () => {
-    if (!data) return 0;
-    if (data.status === "PENDING") return 25;
-    if (data.status === "PROCESSING") return 65;
-    if (data.status === "COMPLETED") return 100;
-    if (data.status === "FAILED") return 100;
-    return 0;
-  };
-
-  const getStatusMessage = () => {
-    if (!data) return "";
-    switch (data.status) {
-      case "PENDING":
-        return "Job is queued and waiting to be processed";
-      case "PROCESSING":
-        return "Analyzing repository and generating insights";
-      case "COMPLETED":
-        return "Analysis completed successfully";
-      case "FAILED":
-        return `Analysis failed: ${data.errorMessage || "Unknown error"}`;
-      default:
-        return "";
-    }
-  };
 
   return (
     <div className="app">

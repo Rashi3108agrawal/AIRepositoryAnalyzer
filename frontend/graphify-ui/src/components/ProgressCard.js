@@ -4,10 +4,6 @@ import './ProgressCard.css';
 const ProgressCard = ({ jobId, data }) => {
   if (!jobId) return null;
 
-  const repo = typeof data?.analysisResult === "string"
-    ? JSON.parse(data.analysisResult)
-    : data?.analysisResult || {};
-
   const progress = () => {
     if (!data) return 0;
     if (data.status === "PENDING") return 25;

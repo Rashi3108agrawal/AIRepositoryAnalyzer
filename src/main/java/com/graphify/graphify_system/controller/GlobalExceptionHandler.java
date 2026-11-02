@@ -76,10 +76,9 @@ public class GlobalExceptionHandler {
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("error", "Internal Server Error");
-        body.put("message", "An unexpected error occurred");
+        body.put("message", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
+        body.put("exception", ex.getClass().getName());
 
-        // Log the actual exception for debugging (but don't expose to client)
-        // In a real app, you'd use a proper logging framework
         System.err.println("Unexpected error: " + ex.getMessage());
         ex.printStackTrace();
 

@@ -80,14 +80,16 @@ public class RepoJobService {
         } catch (Exception e) {
             logger.error("Error processing job {}: {}", savedJob.getId(), e.getMessage(), e);
             // Update job with error status
-            job.setStatus(JobStatus.FAILED);
-            job.setErrorMessage(e.getMessage());
-            job.setCompletedAt(LocalDateTime.now());
-            repoJobRepository.save(job);
+            savedJob.setStatus(JobStatus.FAILED);
+            savedJob.setErrorMessage(e.getMessage());
+            savedJob.setCompletedAt(LocalDateTime.now());
+            savedJob = repoJobRepository.save(savedJob);
             // Still return the job response - client can check status
         }
 
-        return JobResponseDTO.fromEntity(savedJob);
+        return repoJobRepository.findById(savedJob.getId())
+                .map(JobResponseDTO::fromEntity)
+                .orElse(JobResponseDTO.fromEntity(savedJob));
     }
 
     public JobResponseDTO getJobById(Long jobId) {
@@ -151,21 +153,23 @@ public class RepoJobService {
 
             // Calculate total bytes
             double totalBytes = 0;
-            for (Object value : languages.values()) {
-                if (value instanceof Number) {
-                    totalBytes += ((Number) value).doubleValue();
+            if (languages != null) {
+                for (Object value : languages.values()) {
+                    if (value instanceof Number) {
+                        totalBytes += ((Number) value).doubleValue();
+                    }
                 }
-            }
-
-            if (totalBytes <= 0) {
-                throw new RuntimeException("No language data found for repository");
             }
 
             // Convert to percentage
             Map<String, Double> normalizedLanguages = new HashMap<>();
-            for (Map.Entry<String, Object> entry : languages.entrySet()) {
-                double percent = (((Number) entry.getValue()).doubleValue() / totalBytes) * 100;
-                normalizedLanguages.put(entry.getKey(), Math.round(percent * 10.0) / 10.0);
+            if (totalBytes > 0 && languages != null) {
+                for (Map.Entry<String, Object> entry : languages.entrySet()) {
+                    double percent = (((Number) entry.getValue()).doubleValue() / totalBytes) * 100;
+                    normalizedLanguages.put(entry.getKey(), Math.round(percent * 10.0) / 10.0);
+                }
+            } else if (overview.get("language") != null) {
+                normalizedLanguages.put(overview.get("language").toString(), 100.0);
             }
 
             List<Map<String, Object>> contributors = gitHubService.getContributors(repoParts[0], repoParts[1]);

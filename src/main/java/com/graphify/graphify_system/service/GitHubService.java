@@ -33,7 +33,11 @@ public class GitHubService {
         factory.setReadTimeout(15000); // 15 seconds
         restTemplate.setRequestFactory(factory);
 
-        this.githubToken = System.getenv("GITHUB_TOKEN");
+        String token = System.getProperty("GITHUB_TOKEN");
+        if (token == null || token.isBlank()) {
+            token = System.getenv("GITHUB_TOKEN");
+        }
+        this.githubToken = token;
     }
 
     public Map<String, Object> getRepoData(String owner, String repo) {
@@ -77,8 +81,8 @@ public class GitHubService {
         try {
             logger.debug("Making GET request to GitHub API: {}", url);
 
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class,
-                    createHeaders());
+            org.springframework.http.HttpEntity<Void> requestEntity = new org.springframework.http.HttpEntity<>(createHeaders());
+            ResponseEntity<Map> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, requestEntity, Map.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 Map<String, Object> body = response.getBody();
@@ -108,8 +112,8 @@ public class GitHubService {
         try {
             logger.debug("Making GET request to GitHub API (list): {}", url);
 
-            ResponseEntity<List> response = restTemplate.getForEntity(url, List.class,
-                    createHeaders());
+            org.springframework.http.HttpEntity<Void> requestEntity = new org.springframework.http.HttpEntity<>(createHeaders());
+            ResponseEntity<List> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, requestEntity, List.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 List<Map<String, Object>> body = response.getBody();
