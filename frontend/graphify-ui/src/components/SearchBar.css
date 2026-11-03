@@ -1,0 +1,29 @@
+.sg-search-bar {
+  display: flex;
+  align-items: center;
+  max-width: 360px;
+  width: 100%;
+  margin: var(--spacing-3) 0;
+}
+
+.sg-input {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base, 0.95rem);
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.sg-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.sg-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.2);
+}
+

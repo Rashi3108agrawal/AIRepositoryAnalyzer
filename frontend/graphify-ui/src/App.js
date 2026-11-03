@@ -12,6 +12,10 @@ import CommitHeatmap from "./components/CommitHeatmap";
 import AIReport from "./components/AIReport";
 import EmptyState from "./components/EmptyState";
 import CodeGraphViewer from "./components/CodeGraphViewer";
+import DarkModeToggle from "./components/DarkModeToggle";
+import SearchBar from "./components/SearchBar";
+import GitViewer from "./components/GitViewer";
+import DependencyViewer from "./components/DependencyViewer";
 
 // Get API base URL from environment variable
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api";

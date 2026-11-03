@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
-import './CodeGraphViewer.css';
+import GitViewer from "./GitViewer";
+import SearchBar from "./SearchBar";
+import DependencyViewer from "./DependencyViewer";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
 
@@ -386,6 +388,18 @@ export default function CodeGraphViewer() {
           >
             🏛️ Architecture Hubs
           </button>
+          <button
+            className={`cg-tab-btn ${activeTab === 'git' ? 'active' : ''}`}
+            onClick={() => setActiveTab('git')}
+          >
+            🗂️ Git History
+          </button>
+          <button
+            className={`cg-tab-btn ${activeTab === 'deps' ? 'active' : ''}`}
+            onClick={() => setActiveTab('deps')}
+          >
+            📦 Dependencies
+          </button>
         </div>
       </div>
 
@@ -415,21 +429,7 @@ export default function CodeGraphViewer() {
                 >
                   Blast Hotspots
                 </button>
-                <input
-                  type="text"
-                  placeholder="Filter nodes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    color: '#ffffff',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    fontSize: '0.75rem',
-                    outline: 'none',
-                  }}
-                />
+                <SearchBar query={searchTerm} setQuery={setSearchTerm} />
               </div>
 
               <canvas ref={canvasRef} width={800} height={540} className="cg-canvas" />
@@ -693,6 +693,18 @@ export default function CodeGraphViewer() {
                   ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {/* TAB 6: GIT HISTORY */}
+        {activeTab === 'git' && (
+          <div className="cg-query-box">
+            <GitViewer />
+          </div>
+        )}
+        {/* TAB 7: DEPENDENCIES */}
+        {activeTab === 'deps' && (
+          <div className="cg-query-box">
+            <DependencyViewer />
           </div>
         )}
       </div>
