@@ -1,0 +1,31 @@
+{
+  "name": "graphify-code",
+  "version": "1.0.0",
+  "description": "Fast multi-language codebase graph analyzer and MCP server for AI agents",
+  "main": "src/index.js",
+  "bin": {
+    "graphify-code": "./bin/graphify-code.js"
+  },
+  "type": "module",
+  "scripts": {
+    "scan": "node bin/graphify-code.js scan",
+    "mcp": "node bin/graphify-code.js mcp",
+    "view": "node bin/graphify-code.js view",
+    "test": "node bin/graphify-code.js summary"
+  },
+  "keywords": [
+    "mcp",
+    "code-graph",
+    "ast",
+    "ai-agent",
+    "claude-code",
+    "cursor",
+    "blast-radius",
+    "call-graph"
+  ],
+  "author": "Rashika Agrawal",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0"
+  }
+}
