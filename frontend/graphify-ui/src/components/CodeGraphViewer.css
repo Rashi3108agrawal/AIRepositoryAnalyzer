@@ -1,78 +1,104 @@
 .cg-container {
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  margin-top: 24px;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  margin: var(--spacing-9) var(--spacing-6) var(--spacing-7);
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cg-container:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
 }
 
 .cg-header {
-  padding: 16px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: var(--spacing-6) var(--spacing-7);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  background: #f8fafc;
+  gap: var(--spacing-4);
+  background: linear-gradient(90deg, var(--color-bg-card) 0%, var(--color-bg-subtle) 100%);
 }
 
 .cg-title-area {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-3);
 }
 
 .cg-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-3);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+.cg-title::before {
+  content: "🕸️";
+  font-size: var(--font-size-lg);
 }
 
 .cg-badge {
-  background: #3b82f6;
-  color: #ffffff;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 12px;
-  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, var(--color-accent) 0%, #6366f1 100%);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-full);
+  letter-spacing: var(--tracking-wider);
+  box-shadow: var(--shadow-sm);
 }
 
 .cg-tabs {
   display: flex;
-  gap: 6px;
-  background: #e2e8f0;
-  padding: 4px;
-  border-radius: 8px;
+  gap: var(--spacing-1);
+  background: var(--color-bg-secondary);
+  padding: var(--spacing-1);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
 }
 
 .cg-tab-btn {
   background: transparent;
   border: none;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #64748b;
+  padding: var(--spacing-2) var(--spacing-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family-sans);
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: var(--tracking-wide);
+}
+
+.cg-tab-btn:hover:not(.active) {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
 }
 
 .cg-tab-btn.active {
-  background: #ffffff;
-  color: #1e293b;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .cg-body {
-  padding: 20px 24px;
+  padding: var(--spacing-6) var(--spacing-7);
 }
 
 /* Graph Tab Layout */

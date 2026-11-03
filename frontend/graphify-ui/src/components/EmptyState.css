@@ -1,45 +1,63 @@
 .empty-state {
   text-align: center;
-  padding: var(--spacing-8) var(--spacing-4);
-  opacity: 0.8;
+  padding: var(--spacing-11) var(--spacing-6);
+  max-width: 600px;
+  margin: var(--spacing-9) auto;
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-6);
+  line-height: 1;
 }
 
 .empty-state h3 {
-  color: var(--color-accent);
-  margin-bottom: var(--spacing-5);
-  font-size: var(--font-size-3xl);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-4) 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--tracking-tight);
 }
 
 .empty-state p {
-  margin-bottom: var(--spacing-6);
-  line-height: 1.6;
-  font-size: var(--font-size-lg);
+  margin: 0 0 var(--spacing-7) 0;
+  line-height: var(--line-height-relaxed);
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
 }
 
 .empty-state-examples {
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-bg-subtle) 0%, var(--color-bg-card) 100%);
+  border-radius: var(--radius-xl);
   padding: var(--spacing-6);
-  margin-top: var(--spacing-6);
+  margin-top: var(--spacing-7);
+  border: 1px solid var(--color-border);
+  text-align: left;
 }
 
 .empty-state-examples p {
-  margin-bottom: var(--spacing-4);
+  margin: 0 0 var(--spacing-4) 0;
   font-weight: var(--font-weight-semibold);
-  color: var(--color-accent);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  text-align: center;
 }
 
 .empty-state-examples ul {
   text-align: left;
-  max-width: 400px;
+  max-width: 450px;
   margin: 0 auto;
-  padding-left: var(--spacing-4);
+  padding-left: var(--spacing-5);
 }
 
 .empty-state-examples li {
-  margin: var(--spacing-2) 0;
-  font-family: monospace;
-  opacity: 0.9;
-  color: var(--color-text-primary);
+  margin: var(--spacing-3) 0;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
 }

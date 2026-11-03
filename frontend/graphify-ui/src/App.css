@@ -1,8 +1,238 @@
-/* App.css - Now primarily imports CSS variables from index.css */
-/* Component-specific styles are in their respective CSS files */
+/* App.css - Premium SaaS Application Shell */
+.app {
+  min-height: 100vh;
+  padding-bottom: var(--spacing-14);
+}
 
-/* Import CSS variables for use in this file if needed */
-@import './index.css';
+/* Application Container */
+.app-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+}
 
-/* Any app-specific styles that don't belong in components can go here */
-/* For now, we'll keep it minimal since all styling is component-based */
+@media (max-width: 1024px) {
+  .app-container {
+    padding: 0 var(--spacing-4);
+  }
+}
+
+@media (max-width: 640px) {
+  .app-container {
+    padding: 0 var(--spacing-3);
+  }
+}
+
+/* Error Message */
+.error-message {
+  max-width: 800px;
+  margin: var(--spacing-6) auto var(--spacing-7);
+  padding: var(--spacing-5) var(--spacing-6);
+  background: linear-gradient(135deg, var(--color-error-subtle) 0%, #fef2f2 100%);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+}
+
+.error-message p {
+  margin: 0;
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
+  flex: 1;
+  line-height: var(--line-height-relaxed);
+}
+
+.error-message button {
+  padding: var(--spacing-2) var(--spacing-4);
+  background: transparent;
+  border: 1px solid #fecaca;
+  color: var(--color-error);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-family-sans);
+  white-space: nowrap;
+}
+
+.error-message button:hover {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: white;
+}
+
+/* View Navigation */
+.view-nav {
+  display: flex;
+  justify-content: center;
+  margin: var(--spacing-8) 0 var(--spacing-9);
+  padding: 0 var(--spacing-4);
+}
+
+.view-nav-container {
+  display: flex;
+  gap: var(--spacing-1);
+  background: var(--color-bg-card);
+  padding: var(--spacing-1);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.view-nav-button {
+  padding: var(--spacing-3) var(--spacing-6);
+  border: none;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-sans);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  letter-spacing: var(--tracking-normal);
+  color: var(--color-text-secondary);
+  background: transparent;
+  white-space: nowrap;
+}
+
+.view-nav-button:hover:not(.active) {
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+}
+
+.view-nav-button.active {
+  background: var(--color-text-primary);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-md);
+}
+
+.view-nav-button span {
+  font-size: var(--font-size-md);
+}
+
+/* Dashboard Layout */
+.dashboard-section {
+  margin: var(--spacing-10) 0;
+}
+
+.dashboard-section-header {
+  margin-bottom: var(--spacing-7);
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 var(--spacing-6);
+}
+
+.dashboard-section-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2) 0;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--line-height-tight);
+}
+
+.dashboard-section-description {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: var(--line-height-relaxed);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--spacing-6);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+}
+
+.dashboard-grid > * {
+  grid-column: span 6;
+}
+
+.dashboard-grid .grid-span-12 {
+  grid-column: span 12;
+}
+
+.dashboard-grid .grid-span-8 {
+  grid-column: span 8;
+}
+
+.dashboard-grid .grid-span-4 {
+  grid-column: span 4;
+}
+
+@media (max-width: 1280px) {
+  .dashboard-grid .grid-span-8 {
+    grid-column: span 12;
+  }
+  
+  .dashboard-grid .grid-span-4 {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid > *,
+  .dashboard-grid .grid-span-8,
+  .dashboard-grid .grid-span-4 {
+    grid-column: span 12;
+  }
+  
+  .dashboard-grid {
+    gap: var(--spacing-5);
+    padding: 0 var(--spacing-4);
+  }
+  
+  .dashboard-section-header {
+    padding: 0 var(--spacing-4);
+  }
+}
+
+@media (max-width: 640px) {
+  .view-nav {
+    margin: var(--spacing-6) 0 var(--spacing-7);
+    padding: 0 var(--spacing-3);
+  }
+  
+  .view-nav-button {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-2) var(--spacing-4);
+    gap: var(--spacing-1);
+  }
+  
+  .view-nav-button span {
+    font-size: var(--font-size-sm);
+  }
+  
+  .dashboard-grid {
+    gap: var(--spacing-4);
+    padding: 0 var(--spacing-3);
+  }
+  
+  .dashboard-section-header {
+    padding: 0 var(--spacing-3);
+  }
+  
+  .dashboard-section-title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .error-message {
+    margin: var(--spacing-5) var(--spacing-3) var(--spacing-6);
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-4) var(--spacing-5);
+  }
+}

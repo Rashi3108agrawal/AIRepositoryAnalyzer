@@ -1,39 +1,79 @@
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--spacing-5);
-  margin: var(--spacing-7) 0;
+  margin: var(--spacing-9) var(--spacing-6);
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .card {
   background-color: var(--color-bg-card);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-5);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-7);
   box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--color-accent) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-border-strong);
+}
+
+.card:hover::before {
+  opacity: 1;
 }
 
 .metric-label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--spacing-2);
+  letter-spacing: var(--tracking-wider);
+  margin-bottom: var(--spacing-3);
 }
 
 .metric-value {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  background: linear-gradient(to right, var(--color-accent), #4facfe);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-extrabold);
+  background: linear-gradient(135deg, var(--color-accent) 0%, #6366f1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-top: var(--spacing-2);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--line-height-tight);
+}
+
+@media (max-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+    margin: var(--spacing-7) var(--spacing-4);
+  }
+  
+  .card {
+    padding: var(--spacing-5);
+  }
+  
+  .metric-value {
+    font-size: var(--font-size-2xl);
+  }
 }

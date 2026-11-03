@@ -1,32 +1,49 @@
 .chartBox {
   background-color: var(--color-bg-card);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-5);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-7);
   box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.chartBox::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--color-accent) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .chartBox:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-border-strong);
+}
+
+.chartBox:hover::before {
+  opacity: 1;
 }
 
 .chartBox h3 {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  margin-bottom: var(--spacing-4);
+  margin: 0 0 var(--spacing-6) 0;
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
+  gap: var(--spacing-3);
+  letter-spacing: var(--tracking-tight);
 }
 
 .chartBox h3::before {
-  content: "";
-  display: inline-block;
-  width: var(--spacing-3);
-  height: var(--spacing-3);
-  background: linear-gradient(to right, var(--color-accent), #4facfe);
-  border-radius: 50%;
+  content: "📊";
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
 }
